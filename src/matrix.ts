@@ -1,32 +1,32 @@
 import { Vector3 } from './vector';
 
-export class Matrix {
+export class HomogeneousMatrix {
     m: Float32Array;
 
     constructor(elements?: number[]) {
         if (elements && elements.length === 16) {
             this.m = new Float32Array(elements);
         } else {
-            this.m = Matrix.identity().m;
+            this.m = HomogeneousMatrix.identity().m;
         }
     }
 
-    static identity(): Matrix {
+    static identity(): HomogeneousMatrix {
         const m = new Float32Array(16);
         m[0] = m[5] = m[10] = m[15] = 1;
-        return new Matrix([...m]);
+        return new HomogeneousMatrix([...m]);
     }
 
-    multiply(other: Matrix): Matrix {
-        return Matrix.multiply(this, other);
+    multiply(other: HomogeneousMatrix): HomogeneousMatrix {
+        return HomogeneousMatrix.multiply(this, other);
     }
 
-    inverse(): Matrix {
-        return Matrix.inverse(this);
+    inverse(): HomogeneousMatrix {
+        return HomogeneousMatrix.inverse(this);
     }
 
-    transpose(): Matrix {
-        return Matrix.transpose(this);
+    transpose(): HomogeneousMatrix {
+        return HomogeneousMatrix.transpose(this);
     }
 
     transformPoint(v: Vector3): Vector3 {
@@ -48,7 +48,7 @@ export class Matrix {
         );
     }
 
-    static multiply(a: Matrix, b: Matrix): Matrix {
+    static multiply(a: HomogeneousMatrix, b: HomogeneousMatrix): HomogeneousMatrix {
         const out = new Float32Array(16);
         const am = a.m, bm = b.m;
         for (let i = 0; i < 4; i++) {
@@ -58,12 +58,12 @@ export class Matrix {
             out[i + 8] = ai0 * bm[8] + ai1 * bm[9] + ai2 * bm[10] + ai3 * bm[11];
             out[i + 12] = ai0 * bm[12] + ai1 * bm[13] + ai2 * bm[14] + ai3 * bm[15];
         }
-        return new Matrix([...out]);
+        return new HomogeneousMatrix([...out]);
     }
 
-    static transpose(m: Matrix): Matrix {
+    static transpose(m: HomogeneousMatrix): HomogeneousMatrix {
         const a = m.m;
-        return new Matrix([
+        return new HomogeneousMatrix([
             a[0], a[4], a[8], a[12],
             a[1], a[5], a[9], a[13],
             a[2], a[6], a[10], a[14],
@@ -71,7 +71,7 @@ export class Matrix {
         ]);
     }
 
-    static inverse(m: Matrix): Matrix {
+    static inverse(m: HomogeneousMatrix): HomogeneousMatrix {
         const inv = new Float32Array(16);
         const a = m.m;
 
@@ -98,6 +98,6 @@ export class Matrix {
         const det = a[0] * inv[0] + a[1] * inv[4] + a[2] * inv[8] + a[3] * inv[12];
         for (let i = 0; i < 16; i++) inv[i] /= det;
 
-        return new Matrix([...inv]);
+        return new HomogeneousMatrix([...inv]);
     }
 }

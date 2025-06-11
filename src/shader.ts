@@ -1,66 +1,52 @@
 export class Shader {
-    private program: WebGLProgram;
+    readonly handle: WebGLShader;
 
-    constructor(private gl: WebGLRenderingContext, vertexSrc: string, fragmentSrc: string) {
+    constructor(
+        readonly gl: WebGLRenderingContext,
+        readonly type: number, // gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+        readonly source: string
+    ) {
+        const shader = gl.createShader(type);
+        if (!shader) throw new Error("Failed to create shader");
 
-        const vs = this.compileShader(gl.VERTEX_SHADER, vertexSrc);
-        const fs = this.compileShader(gl.FRAGMENT_SHADER, fragmentSrc);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
 
-        this.program = gl.createProgram()!;
-        gl.attachShader(this.program, vs);
-        gl.attachShader(this.program, fs);
-        gl.linkProgram(this.program);
-
-        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-            const log = gl.getProgramInfoLog(this.program);
-            throw new Error(`Shader program link failed:\n${log}`);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            const log = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw new Error(`Shader compile error: ${log}`);
         }
+
+        this.handle = shader;
     }
+    // TODO: Create a set uniform method
+}
+export class ShaderProgram {
+    readonly program: WebGLProgram;
 
-    private compileShader(type: number, source: string): WebGLShader {
-        const shader = this.gl.createShader(type)!;
-        this.gl.shaderSource(shader, source);
-        this.gl.compileShader(shader);
+    constructor(
+        readonly gl: WebGLRenderingContext,
+        readonly vertexShader: Shader,
+        readonly fragmentShader: Shader
+    ) {
+        const program = gl.createProgram();
+        if (!program) throw new Error("Failed to create shader program");
 
-        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-            const log = this.gl.getShaderInfoLog(shader);
-            throw new Error(`Shader compile error (${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'}):\n${log}`);
+        gl.attachShader(program, vertexShader.handle);
+        gl.attachShader(program, fragmentShader.handle);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            const log = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw new Error(`Program link error: ${log}`);
         }
 
-        return shader;
+        this.program = program;
     }
 
     use(): void {
         this.gl.useProgram(this.program);
     }
-
-    getAttribLocation(name: string): number {
-        return this.gl.getAttribLocation(this.program, name);
-    }
-
-    setUniform1f(name: string, x: number): void {
-        const loc = this.gl.getUniformLocation(this.program, name);
-        if (loc) this.gl.uniform1f(loc, x);
-    }
-
-    setUniform1i(name: string, x: number): void {
-        const loc = this.gl.getUniformLocation(this.program, name);
-        if (loc) this.gl.uniform1i(loc, x);
-    }
-
-    setUniform2f(name: string, x: number, y: number): void {
-        const loc = this.gl.getUniformLocation(this.program, name);
-        if (loc) this.gl.uniform2f(loc, x, y);
-    }
-
-    setUniform3f(name: string, x: number, y: number, z: number): void {
-        const loc = this.gl.getUniformLocation(this.program, name);
-        if (loc) this.gl.uniform3f(loc, x, y, z);
-    }
-
-    setUniformMatrix4fv(name: string, matrix: Float32Array): void {
-        const loc = this.gl.getUniformLocation(this.program, name);
-        if (loc) this.gl.uniformMatrix4fv(loc, false, matrix);
-    }
-
 }
