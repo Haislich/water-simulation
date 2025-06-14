@@ -1,4 +1,5 @@
-import type { HomogeneousMatrix } from "./matrix";
+import type { mat4 } from "gl-matrix";
+
 
 export interface SceneObject {
     readonly shaders: any;
@@ -9,5 +10,5 @@ export interface SceneObject {
     with_shader(shader: any): this;
     with_texture(texture: any): this;
     update?(dt: number): void;
-    render(view: HomogeneousMatrix, projection: HomogeneousMatrix): void;
+    render(view: mat4, projection: mat4): void;
 }

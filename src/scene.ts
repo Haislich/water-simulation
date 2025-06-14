@@ -1,10 +1,11 @@
-import { HomogeneousMatrix } from "./matrix";
+import type { mat4 } from "gl-matrix";
+
 export class Scene {
 
     constructor(
-        readonly modelMatrix: HomogeneousMatrix,
-        readonly viewMatrix: HomogeneousMatrix,
-        readonly projectionMatrix: HomogeneousMatrix,
+        readonly modelMatrix: mat4,
+        readonly viewMatrix: mat4,
+        readonly projectionMatrix: mat4,
         readonly gl: WebGLRenderingContext,
         viewportWidth: number = 800,
         viewportHeight: number = 600,
